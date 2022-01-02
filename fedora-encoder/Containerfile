@@ -5,6 +5,6 @@ RUN dnf update -y && \
     dnf install -y https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-35.noarch.rpm && \
     rm -rf /var/cache/dnf
 
-RUN dnf install -y fish rclone ffmpeg
+RUN dnf install -y fish rclone ffmpeg handbrake
 
 ENTRYPOINT ["fish"]
