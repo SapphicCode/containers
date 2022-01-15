@@ -4,7 +4,7 @@ variables:
 fedora-encoder:
   stage: build
   image:
-    name: gcr.io/kaniko-project/executor:slim
+    name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
   script:
     - mkdir -p /kaniko/.docker
