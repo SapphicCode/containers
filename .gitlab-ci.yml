@@ -1,0 +1,12 @@
+variables:
+  CREDS: $CREDS
+
+fedora-encoder:
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:slim
+    entrypoint: [""]
+  script:
+    - mkdir -p /kaniko/.docker
+    - echo "${CREDS}" > /kaniko/.docker/auths.json
+    - /kaniko/executor --context "${CI_PROJECT_DIR}/fedora-encoder" --dockerfile Containerfile --destination "quay.io/sapphiccode/fedora-encoder:latest"
