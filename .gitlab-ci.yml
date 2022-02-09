@@ -1,12 +1,16 @@
 variables:
   CREDS: $CREDS
 
-fedora-encoder:
+docker:
   stage: build
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
+  parallel:
+    matrix:
+      - IMAGE:
+          - fedora-encoder
   script:
     - mkdir -p /kaniko/.docker
     - echo "${CREDS}" > /kaniko/.docker/config.json
-    - /kaniko/executor --context "${CI_PROJECT_DIR}/fedora-encoder" --dockerfile Containerfile --destination "quay.io/sapphiccode/fedora-encoder:latest"
+    - /kaniko/executor --context "${CI_PROJECT_DIR}/${IMAGE}" --dockerfile Containerfile --destination "quay.io/sapphiccode/${IMAGE}:latest"
