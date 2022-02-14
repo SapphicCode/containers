@@ -1,0 +1,7 @@
+FROM docker.io/library/alpine:edge
+
+RUN apk add --no-cache syncthing-utils
+
+ENTRYPOINT ["strelaysrv"]
+EXPOSE 22067/tcp
+EXPOSE 22070/tcp
