@@ -10,6 +10,7 @@ docker:
     matrix:
       - IMAGE:
           - fedora-encoder
+          - syncthing-relay
   script:
     - mkdir -p /kaniko/.docker
     - echo "${CREDS}" > /kaniko/.docker/config.json
