@@ -7,4 +7,4 @@ RUN dnf update -y && \
 
 RUN dnf install -y fish rclone ffmpeg handbrake
 
-ENTRYPOINT ["fish"]
+CMD ["fish"]
