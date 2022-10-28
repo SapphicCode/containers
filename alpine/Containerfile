@@ -1,6 +1,6 @@
 FROM docker.io/library/alpine:latest
 
-RUN echo "@testing https://dl-cdn.alpinelinux.org/alpine/testing/edge" >> /etc/apk/repositories
+RUN echo "@testing https://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
 RUN apk add --no-cache \
     bash \
     elvish@testing \
