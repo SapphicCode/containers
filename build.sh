@@ -11,6 +11,6 @@ else
 fi
 
 if [ "${CI_COMMIT_BRANCH:-unset}" = "main" ]; then
-	buildah push build docker://quay.io/sapphiccode/"${context}"
+	buildah push build docker://quay.io/sapphiccode/"${context}":latest
+    buildah push build docker://quay.io/sapphiccode/"${context}":"$(date +'%Y%m%d')"
 fi
-
