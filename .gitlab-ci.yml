@@ -11,6 +11,7 @@ container:
           - alpine
           - fedora-encoder
           - syncthing-relay
+          - znc
   before_script:
     - apk add bash buildah podman
   script:
