@@ -25,6 +25,7 @@ resources:
 jobs:
   - name: build-alpine
     max_in_flight: 1
+    public: true
     plan:
       - get: src
         resource: containers
@@ -57,9 +58,6 @@ jobs:
             BUILD_ARG_tag: ((.:tag))
           run:
             path: build
-
-        # output_mapping:
-        #   image: alpine
 
       - put: alpine
         params:
