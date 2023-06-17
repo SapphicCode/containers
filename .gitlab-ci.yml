@@ -8,7 +8,6 @@ container:
   parallel:
     matrix:
       - IMAGE:
-          - alpine
           - fedora-encoder
           - syncthing-relay
           - znc
@@ -16,4 +15,3 @@ container:
     - apk add bash buildah podman
   script:
     - ./build.sh "${IMAGE}"
-

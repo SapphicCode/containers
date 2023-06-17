@@ -1,0 +1,67 @@
+resources:
+  - name: containers
+    icon: gitlab
+    type: git
+    source:
+      uri: https://gitlab.com/SapphicCode/containers.git
+
+  - name: upstream-alpine
+    icon: docker
+    type: registry-image
+    source:
+      repository: docker.io/library/alpine
+      semver_constraint: "< 20190000"
+    check_every: 6h
+
+  - name: alpine
+    icon: docker
+    type: registry-image
+    source:
+      repository: quay.io/sapphiccode/alpine
+      tag: latest
+      username: ((quay_username))
+      password: ((quay_password))
+
+jobs:
+  - name: build-alpine
+    max_in_flight: 1
+    plan:
+      - get: src
+        resource: containers
+        trigger: true
+      - get: upstream-alpine
+        trigger: true
+        params:
+          skip_download: true
+
+      - load_var: tag
+        file: upstream-alpine/tag
+
+      - task: build-image
+        privileged: true
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: docker.io/concourse/oci-build-task
+
+          inputs:
+            - name: src
+          outputs:
+            - name: image
+
+          params:
+            CONTEXT: src/alpine
+            DOCKERFILE: src/alpine/Containerfile
+            BUILD_ARG_tag: ((.:tag))
+          run:
+            path: build
+
+        # output_mapping:
+        #   image: alpine
+
+      - put: alpine
+        params:
+          image: image/image.tar
+          version: ((.:tag))
