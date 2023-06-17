@@ -1,4 +1,5 @@
-FROM docker.io/library/alpine:latest
+ARG tag=latest
+FROM docker.io/library/alpine:${tag}
 
 RUN echo "@testing https://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
 RUN apk add --no-cache \
