@@ -1,0 +1,52 @@
+when:
+  - event: push
+  - event: cron
+
+matrix:
+  IMAGE:
+    - fedora-with-lix
+
+steps:
+  - name: build
+    image: docker.io/library/alpine:latest
+    directory: ${IMAGE}
+    commands:
+      - apk add docker-cli docker-cli-buildx
+      - id=$$(docker buildx build --output type=docker -q .)
+      - version_cmd=$$(docker image inspect $$id --format '{{ index .Config.Labels "sapphiccode.version.cmd" }}')
+      - version=$$(docker run --rm $$id $$version_cmd)
+      - echo $$id > .build-id
+      - echo $$version > .build-version
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  - name: push
+    image: docker.io/library/alpine:latest
+    directory: ${IMAGE}
+    secrets:
+      - FORGEJO_TOKEN
+    commands:
+      - apk add docker-cli
+      - echo "$${FORGEJO_TOKEN}" | docker login -u SapphicCode --password-stdin git.sapphiccode.net
+      - id=$$(cat .build-id)
+      - echo $$id
+      - version=$$(cat .build-version)
+      - echo $$version
+      - |
+        for target in git.sapphiccode.net/sapphiccode/containers; do
+          repo_path=$$target/${IMAGE}:$$version
+          echo $$repo_path
+          docker image tag $$id $$repo_path
+          docker image push $$repo_path
+
+          repo_path_latest=$$(echo $$repo_path | cut -d ":" -f 1):latest
+          docker image tag $$id $$repo_path_latest
+          docker image push $$repo_path_latest
+        done
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    when:
+      - event: push
+        branch: main
+      - event: cron
+        cron: nightly
