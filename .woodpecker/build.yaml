@@ -25,16 +25,16 @@ steps:
     image: docker.io/library/alpine:latest
     directory: ${IMAGE}
     secrets:
-      - FORGEJO_TOKEN
+      - QUAY_TOKEN
     commands:
       - apk add docker-cli
-      - echo "$${FORGEJO_TOKEN}" | docker login -u SapphicCode --password-stdin git.sapphiccode.net
+      - echo "${{QUAY_TOKEN}}" | docker login -u "sapphiccode+woodpecker" --password-stdin quay.io
       - id=$$(cat .build-id)
       - echo $$id
       - version=$$(cat .build-version)
       - echo $$version
       - |
-        for target in git.sapphiccode.net/sapphiccode/containers; do
+        for target in quay.io/sapphiccode; do
           repo_path=$$target/${IMAGE}:$$version
           echo $$repo_path
           docker image tag $$id $$repo_path
