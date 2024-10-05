@@ -1,0 +1,16 @@
+when:
+  - event: push
+  - event: cron
+
+depends_on:
+  - build
+
+steps:
+  - name: clean-up
+    image: docker.io/library/alpine:latest
+    commands:
+      - apk add docker-cli docker-cli-buildx
+      - docker image prune -y
+      - docker buildx prune -y
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
