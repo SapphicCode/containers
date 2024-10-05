@@ -28,7 +28,7 @@ steps:
       - QUAY_TOKEN
     commands:
       - apk add docker-cli
-      - echo "${{QUAY_TOKEN}}" | docker login -u "sapphiccode+woodpecker" --password-stdin quay.io
+      - echo "$${{QUAY_TOKEN}}" | docker login -u "sapphiccode+woodpecker" --password-stdin quay.io
       - id=$$(cat .build-id)
       - echo $$id
       - version=$$(cat .build-version)
