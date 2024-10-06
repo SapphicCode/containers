@@ -7,9 +7,8 @@ depends_on:
 
 steps:
   - name: clean-up
-    image: docker.io/library/alpine:latest
+    image: quay.io/sapphiccode/alpine-cicd:latest
     commands:
-      - apk add docker-cli docker-cli-buildx
       - docker image prune -f
       - docker buildx prune -f
     volumes:

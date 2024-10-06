@@ -10,10 +10,9 @@ matrix:
 
 steps:
   - name: build
-    image: docker.io/library/alpine:latest
+    image: quay.io/sapphiccode/alpine-cicd:latest
     directory: ${IMAGE}
     commands:
-      - apk add docker-cli docker-cli-buildx
       - id=$$(docker buildx build --pull --output type=docker -q .)
       - version_cmd=$$(docker image inspect $$id --format '{{ index .Config.Labels "sapphiccode.version.cmd" }}')
       - version=$$(docker run --rm --entrypoint '["sh", "-c"]' $$id "$$version_cmd")
@@ -23,12 +22,11 @@ steps:
       - /var/run/docker.sock:/var/run/docker.sock
 
   - name: push
-    image: docker.io/library/alpine:latest
+    image: quay.io/sapphiccode/alpine-cicd:latest
     directory: ${IMAGE}
     secrets:
       - QUAY_TOKEN
     commands:
-      - apk add docker-cli
       - echo "$${QUAY_TOKEN}" | docker login -u "sapphiccode+woodpecker" --password-stdin quay.io
       - id=$$(cat .build-id)
       - echo $$id
