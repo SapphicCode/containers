@@ -6,4 +6,4 @@ RUN apk add --no-cache \
     # docker builds:
     docker-cli docker-cli-buildx
 
-LABEL sapphiccode.version.cmd "grep VERSION_ID /etc/os-release | cut -d = -f 2"
+LABEL sapphiccode.version.cmd="grep VERSION_ID /etc/os-release | cut -d = -f 2"
