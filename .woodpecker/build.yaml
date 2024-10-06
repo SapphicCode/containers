@@ -13,7 +13,7 @@ steps:
     image: quay.io/sapphiccode/alpine-cicd:latest
     directory: ${IMAGE}
     commands:
-      - id=$$(docker buildx build --pull --output type=docker -q .)
+      - id=$$(docker buildx build --pull --build-arg=SOURCE_DATE_EPOCH=0 --output type=docker,rewrite-timestamp=true -q .)
       - version_cmd=$$(docker image inspect $$id --format '{{ index .Config.Labels "sapphiccode.version.cmd" }}')
       - version=$$(docker run --rm --entrypoint '["sh", "-c"]' $$id "$$version_cmd")
       - echo $$id > .build-id
