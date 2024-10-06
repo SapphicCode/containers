@@ -4,6 +4,7 @@ when:
 
 matrix:
   IMAGE:
+    - alpine-cicd
     - fedora-with-lix
     - pufferpanel-rootless
 
@@ -13,7 +14,7 @@ steps:
     directory: ${IMAGE}
     commands:
       - apk add docker-cli docker-cli-buildx
-      - id=$$(docker buildx build --output type=docker -q .)
+      - id=$$(docker buildx build --pull --output type=docker -q .)
       - version_cmd=$$(docker image inspect $$id --format '{{ index .Config.Labels "sapphiccode.version.cmd" }}')
       - version=$$(docker run --rm --entrypoint '["sh", "-c"]' $$id "$$version_cmd")
       - echo $$id > .build-id
