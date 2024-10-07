@@ -13,7 +13,7 @@ steps:
     image: quay.io/sapphiccode/alpine-cicd:latest
     directory: ${IMAGE}
     commands:
-      - id=$$(docker buildx build --pull --build-arg=SOURCE_DATE_EPOCH=0 --output type=docker,rewrite-timestamp=true -q .)
+      - id=$$(docker buildx build --pull --build-arg=SOURCE_DATE_EPOCH=0 --label 'org.opencontainers.image.source=https://github.com/SapphicCode/containers' --output type=docker,rewrite-timestamp=true -q .)
       - version_cmd=$$(docker image inspect $$id --format '{{ index .Config.Labels "sapphiccode.version.cmd" }}')
       - version=$$(docker run --rm --entrypoint '["sh", "-c"]' $$id "$$version_cmd")
       - echo $$id > .build-id
@@ -26,14 +26,16 @@ steps:
     directory: ${IMAGE}
     secrets:
       - QUAY_TOKEN
+      - GHCR_TOKEN
     commands:
       - echo "$${QUAY_TOKEN}" | docker login -u "sapphiccode+woodpecker" --password-stdin quay.io
+      - echo "$${GHCR_TOKEN}" | docker login -u "SapphicCode" --password-stdin ghcr.io
       - id=$$(cat .build-id)
       - echo $$id
       - version=$$(cat .build-version)
       - echo $$version
       - |
-        for target in quay.io/sapphiccode; do
+        for target in quay.io/sapphiccode ghcr.io/sapphiccode/containers; do
           repo_path=$$target/${IMAGE}:$$version
           echo $$repo_path
           docker image tag $$id $$repo_path
