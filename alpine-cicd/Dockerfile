@@ -2,7 +2,7 @@ FROM docker.io/library/alpine:latest
 
 RUN apk add --no-cache \
     # common tools:
-    curl git git git-lfs gnupg \
+    bash curl git git git-lfs gnupg grep jq openssh ripgrep sed yq-go \
     # docker builds:
     docker-cli docker-cli-buildx
 
