@@ -40,4 +40,12 @@ fi
 
 grep "rcon.password" server.properties || true
 
-exec java $JAVA_ARGS -jar /server/server.jar nogui "${@}"
+SERVER_JAR="/server/server.jar"
+# detect quilt
+if [ -f "/server/quilt-server-launch.jar" ]; then
+    cp /server/*.jar ./
+    rsync -a /server/libraries/ ./libraries/
+    SERVER_JAR="quilt-server-launch.jar"
+fi
+
+exec java $JAVA_ARGS -jar $SERVER_JAR nogui "${@}"

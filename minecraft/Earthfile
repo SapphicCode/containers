@@ -17,6 +17,9 @@ build:
     FROM docker.io/library/eclipse-temurin:${java_version}-jre
     ENV JAVA_VERSION=$java_version
 
+    # install deps:
+    RUN apt-get update && apt-get install -y rsync && rm -rf /var/lib/apt/lists/*
+
     # download server:
     RUN mkdir /server
     IF [ -z "$server_url_override" ]
@@ -51,7 +54,7 @@ build-version:
     RUN curl --silent --fail --location -o manifest.json https://piston-meta.mojang.com/mc/game/version_manifest_v2.json
     LET version_manifest_url = $(cat manifest.json | jq -r --arg version "$version" '.versions[] | select(.id == $version) | .url')
 
-    BUILD +build --manifest_url $version_manifest_url
+    FROM +build --manifest_url $version_manifest_url
 
 build-paper:
     ARG --required version
@@ -63,6 +66,26 @@ build-paper:
     LET paper_url = "https://api.papermc.io/v2/projects/paper/versions/${version}/builds/${build}/downloads/paper-${version}-${build}.jar"
 
     BUILD +build --manifest_url $version_manifest_url --server_url_override $paper_url --prefix "paper" --extra_tags $extra_tags
+
+build-quilt:
+    ARG --required version
+    ARG extra_tags = ""
+
+    FROM +build-version --version $version
+    RUN cat /etc/os-release
+
+    USER root
+    RUN \
+        curl --silent --fail --location -o /tmp/quilt-installer.jar https://quiltmc.org/api/v1/download-latest-installer/java-universal && \
+        java -jar /tmp/quilt-installer.jar install server $version --install-dir=/server && \
+        rm -r /tmp/*
+    USER 1000
+
+    SAVE IMAGE --push ghcr.io/sapphiccode/minecraft:quilt-$version
+    FOR etag IN $extra_tags
+        SAVE IMAGE --push ghcr.io/sapphiccode/minecraft:$etag
+    END
+
 
 build-latest:
     RUN curl --silent --fail --location -o manifest.json https://piston-meta.mojang.com/mc/game/version_manifest_v2.json
@@ -76,3 +99,4 @@ build-latest:
     BUILD +build --manifest_url $latest_snapshot_manifest_url --extra_tags "latest-snapshot"
 
     BUILD +build-paper --version $latest_release --extra_tags "latest-paper"
+    BUILD +build-quilt --version $latest_release --extra_tags "latest-quilt"
