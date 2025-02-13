@@ -1,0 +1,23 @@
+# .github/workflows/ci.yml
+
+name: Earthly
+
+on:
+  push:
+  schedule:
+    - cron: "42 19 * * *"
+
+jobs:
+  build-minecraft:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: earthly/actions-setup@v1
+        with:
+          version: v0.8.15
+      - uses: actions/checkout@v4
+      - name: Run build
+        working-directory: minecraft
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EARTHLY_PUSH: ${{ github.ref == 'refs/heads/main' }}
+        run: earthly --ci +build-latest

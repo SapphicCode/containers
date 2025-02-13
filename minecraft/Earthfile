@@ -1,0 +1,77 @@
+VERSION 0.8
+
+FROM ghcr.io/sapphiccode/containers/alpine-cicd:latest
+
+build:
+    ARG --required manifest_url
+    ARG server_url_override = ""
+    ARG extra_tags = ""
+
+    RUN curl --silent --fail --location -o manifest.json $manifest_url
+    LET java_version = $(cat manifest.json | jq -r '.javaVersion.majorVersion')
+    ARG prefix = $(cat manifest.json | jq -r '.type')
+    LET tag = ${prefix}-$(cat manifest.json | jq -r '.id')
+    LET server_url = $(cat manifest.json | jq -r '.downloads.server.url')
+    LET server_sha1 = $(cat manifest.json | jq -r '.downloads.server.sha1')
+
+    FROM docker.io/library/eclipse-temurin:${java_version}-jre
+    ENV JAVA_VERSION=$java_version
+
+    # download server:
+    RUN mkdir /server
+    IF [ -z "$server_url_override" ]
+        RUN curl --silent --fail --location --output /server/server.jar $server_url && \
+            echo "$server_sha1 /server/server.jar" | sha1sum -c
+    ELSE
+        RUN curl --silent --fail --location --output /server/server.jar $server_url_override
+    END
+
+    # copy supporting files:
+    COPY ./start.sh /server/start.sh
+    COPY ./server.properties /server/server.properties
+
+    # set up work directory & user:
+    RUN mkdir /data && chown 1000:1000 /data
+    USER 1000
+    WORKDIR /data
+
+    ENTRYPOINT ["/server/start.sh"]
+    VOLUME /data
+    EXPOSE 25565/tcp
+
+    LABEL org.opencontainers.image.source = "https://github.com/SapphicCode/containers"
+    SAVE IMAGE --push ghcr.io/sapphiccode/minecraft:$tag
+    FOR etag IN $extra_tags
+        SAVE IMAGE --push ghcr.io/sapphiccode/minecraft:$etag
+    END
+
+build-version:
+    ARG --required version
+
+    RUN curl --silent --fail --location -o manifest.json https://piston-meta.mojang.com/mc/game/version_manifest_v2.json
+    LET version_manifest_url = $(cat manifest.json | jq -r --arg version "$version" '.versions[] | select(.id == $version) | .url')
+
+    BUILD +build --manifest_url $version_manifest_url
+
+build-paper:
+    ARG --required version
+    ARG build = $(curl --silent --fail --location https://api.papermc.io/v2/projects/paper/versions/${version}/builds | jq -r '.builds | map(select(.channel == "default") | .build) | .[-1]')
+
+    RUN curl --silent --fail --location -o manifest.json https://piston-meta.mojang.com/mc/game/version_manifest_v2.json
+    LET version_manifest_url = $(cat manifest.json | jq -r --arg version "$version" '.versions[] | select(.id == $version) | .url')
+    LET paper_url = "https://api.papermc.io/v2/projects/paper/versions/${version}/builds/${build}/downloads/paper-${version}-${build}.jar"
+
+    BUILD +build --manifest_url $version_manifest_url --server_url_override $paper_url --prefix "paper"
+
+build-latest:
+    RUN curl --silent --fail --location -o manifest.json https://piston-meta.mojang.com/mc/game/version_manifest_v2.json
+
+    LET latest_release = $(cat manifest.json | jq -r '.latest.release')
+    LET latest_version_manifest_url = $(cat manifest.json | jq -r --arg version "$latest_release" '.versions[] | select(.id == $version) | .url')
+    BUILD +build --manifest_url $latest_version_manifest_url --extra_tags "latest latest-release"
+
+    LET latest_snapshot = $(cat manifest.json | jq -r '.latest.snapshot')
+    LET latest_snapshot_manifest_url = $(cat manifest.json | jq -r --arg version "$latest_snapshot" '.versions[] | select(.id == $version) | .url')
+    BUILD +build --manifest_url $latest_snapshot_manifest_url --extra_tags "latest-snapshot"
+
+    BUILD +build-paper --version $latest_release
