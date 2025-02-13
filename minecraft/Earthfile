@@ -56,12 +56,13 @@ build-version:
 build-paper:
     ARG --required version
     ARG build = $(curl --silent --fail --location https://api.papermc.io/v2/projects/paper/versions/${version}/builds | jq -r '.builds | map(select(.channel == "default") | .build) | .[-1]')
+    ARG extra_tags = ""
 
     RUN curl --silent --fail --location -o manifest.json https://piston-meta.mojang.com/mc/game/version_manifest_v2.json
     LET version_manifest_url = $(cat manifest.json | jq -r --arg version "$version" '.versions[] | select(.id == $version) | .url')
     LET paper_url = "https://api.papermc.io/v2/projects/paper/versions/${version}/builds/${build}/downloads/paper-${version}-${build}.jar"
 
-    BUILD +build --manifest_url $version_manifest_url --server_url_override $paper_url --prefix "paper"
+    BUILD +build --manifest_url $version_manifest_url --server_url_override $paper_url --prefix "paper" --extra_tags $extra_tags
 
 build-latest:
     RUN curl --silent --fail --location -o manifest.json https://piston-meta.mojang.com/mc/game/version_manifest_v2.json
@@ -74,4 +75,4 @@ build-latest:
     LET latest_snapshot_manifest_url = $(cat manifest.json | jq -r --arg version "$latest_snapshot" '.versions[] | select(.id == $version) | .url')
     BUILD +build --manifest_url $latest_snapshot_manifest_url --extra_tags "latest-snapshot"
 
-    BUILD +build-paper --version $latest_release
+    BUILD +build-paper --version $latest_release --extra_tags "latest-paper"
