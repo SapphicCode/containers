@@ -29,6 +29,8 @@ jobs:
 
       - name: Stop Docker
         run: sudo systemctl stop docker
+      - name: Fix permissions
+        run: sudo setfacl -R -m "$(whoami):rwX" -m "d:$(whoami):rwX" /var/lib/docker
       - name: Cache Docker volumes
         uses: actions/cache@v4
         with:
