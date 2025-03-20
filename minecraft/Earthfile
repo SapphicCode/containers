@@ -18,7 +18,14 @@ build:
     ENV JAVA_VERSION=$java_version
 
     # install deps:
-    RUN apt-get update && apt-get install -y rsync && rm -rf /var/lib/apt/lists/*
+    RUN apt-get update && \
+        apt-get install -y curl rsync nano && \
+        rm -rf /var/lib/apt/lists/*
+
+    # install useful external apps:
+    # (for editing configs in `docker exec -it` sessions)
+    RUN cd /usr/local/bin && curl https://zyedidia.github.io/eget.sh | sh
+    RUN eget --to=/usr/local/bin -a '^.sha' -a '^.tgz' zyedidia/micro
 
     # download server:
     RUN mkdir /server
