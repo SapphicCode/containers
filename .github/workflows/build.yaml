@@ -30,9 +30,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           EARTHLY_PUSH: ${{ github.ref == 'refs/heads/main' }}
-        run: earthly --ci +minecraft/build-latest-vanilla
+        run: earthly --ci ./minecraft+build-latest-vanilla
       - name: Run build for everything else
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           EARTHLY_PUSH: ${{ github.ref == 'refs/heads/main' }}
-        run: earthly --ci +minecraft/build-latest-all
+        run: earthly --ci ./minecraft+build-latest-all
