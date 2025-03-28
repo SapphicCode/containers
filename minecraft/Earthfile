@@ -94,7 +94,7 @@ build-quilt:
     END
 
 
-build-latest:
+build-latest-vanilla:
     RUN curl --silent --fail --location -o manifest.json https://piston-meta.mojang.com/mc/game/version_manifest_v2.json
 
     LET latest_release = $(cat manifest.json | jq -r '.latest.release')
@@ -105,5 +105,11 @@ build-latest:
     LET latest_snapshot_manifest_url = $(cat manifest.json | jq -r --arg version "$latest_snapshot" '.versions[] | select(.id == $version) | .url')
     BUILD +build --manifest_url $latest_snapshot_manifest_url --extra_tags "latest-snapshot"
 
-    BUILD +build-paper --version $latest_release --extra_tags "latest-paper"
+build-latest-all:
+    RUN curl --silent --fail --location -o manifest.json https://piston-meta.mojang.com/mc/game/version_manifest_v2.json
+
+    LET latest_release = $(cat manifest.json | jq -r '.latest.release')
+
+    BUILD +build-latest-vanilla
     BUILD +build-quilt --version $latest_release --extra_tags "latest-quilt"
+    BUILD +build-paper --version $latest_release --extra_tags "latest-paper"

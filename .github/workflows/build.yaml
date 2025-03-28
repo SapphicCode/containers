@@ -25,8 +25,14 @@ jobs:
       - uses: earthly/actions-setup@v1
         with:
           version: v0.8.15
-      - name: Run build
+
+      - name: Run build for latest vanilla
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           EARTHLY_PUSH: ${{ github.ref == 'refs/heads/main' }}
-        run: earthly --ci +main
+        run: earthly --ci +minecraft/build-latest-vanilla
+      - name: Run build for everything else
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EARTHLY_PUSH: ${{ github.ref == 'refs/heads/main' }}
+        run: earthly --ci +minecraft/build-latest-all
