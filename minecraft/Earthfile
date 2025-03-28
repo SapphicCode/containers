@@ -103,7 +103,9 @@ build-latest-vanilla:
 
     LET latest_snapshot = $(cat manifest.json | jq -r '.latest.snapshot')
     LET latest_snapshot_manifest_url = $(cat manifest.json | jq -r --arg version "$latest_snapshot" '.versions[] | select(.id == $version) | .url')
-    BUILD +build --manifest_url $latest_snapshot_manifest_url --extra_tags "latest-snapshot"
+    IF [ "$latest_snapshot" != "$latest_release" ]
+        BUILD +build --manifest_url $latest_snapshot_manifest_url --extra_tags "latest-snapshot"
+    END
 
 build-latest-all:
     RUN curl --silent --fail --location -o manifest.json https://piston-meta.mojang.com/mc/game/version_manifest_v2.json
