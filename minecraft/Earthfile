@@ -25,7 +25,7 @@ build:
     # install useful external apps:
     # (for editing configs in `docker exec -it` sessions)
     RUN cd /usr/local/bin && curl https://zyedidia.github.io/eget.sh | sh
-    RUN eget --to=/usr/local/bin -a '^.sha' -a '^.tgz' zyedidia/micro
+    RUN eget --to=/usr/local/bin -a '^.sha' -a '^static' -a '.tar.gz' zyedidia/micro
 
     # download server:
     RUN mkdir /server
